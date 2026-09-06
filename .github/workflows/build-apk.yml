@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -30,16 +30,8 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Get dependencies
+      - name: Install dependencies
         run: flutter pub get
-
-      - name: Fix and regenerated Gradle Wrapper
-        run: |
-          cd android
-          gradle wrapper --gradle-version 8.7 --distribution-type bin
-          sed -i 's/\r$//' gradlew
-          chmod +x gradlew
-          cd ..
 
       - name: Build release APK
         run: flutter build apk --release --android-skip-build-dependency-validation
