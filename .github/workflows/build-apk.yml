@@ -33,8 +33,10 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
+      - name: Fix gradlew line endings and permissions
+        run: |
+          sed -i 's/\r$//' android/gradlew
+          chmod +x android/gradlew
 
       - name: Build release APK
         run: flutter build apk --release
