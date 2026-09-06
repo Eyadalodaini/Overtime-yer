@@ -24,8 +24,6 @@ jobs:
           channel: stable
           cache: true
 
-      # flutter create can regenerate the Android platform, but it may also
-      # replace lib/main.dart and pubspec.yaml. We back up the app source first.
       - name: Prepare Android platform without losing app source
         shell: bash
         run: |
@@ -50,17 +48,26 @@ jobs:
             fi
           fi
 
-          # إضافة إعدادات Desugaring تلقائياً إلى build.gradle
-          if ! grep -q "coreLibraryDesugaringEnabled" android/app/build.gradle; then
-            sed -i '/compileOptions {/a \        coreLibraryDesugaringEnabled true' android/app/build.gradle
-            echo -e "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'\n}" >> android/app/build.gradle
+          # إضافة إعدادات Desugaring سواء كان الملف build.gradle أو build.gradle.kts
+          BG_FILE="android/app/build.gradle.kts"
+          if [ ! -f "$BG_FILE" ]; then
+            BG_FILE="android/app/build.gradle"
+          fi
+
+          if ! grep -q "coreLibraryDesugaring" "$BG_FILE"; then
+            echo '' >> "$BG_FILE"
+            echo 'android {' >> "$BG_FILE"
+            echo '    compileOptions {' >> "$BG_FILE"
+            echo '        isCoreLibraryDesugaringEnabled = true' >> "$BG_FILE"
+            echo '    }' >> "$BG_FILE"
+            echo '}' >> "$BG_FILE"
+            echo 'dependencies {' >> "$BG_FILE"
+            echo '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")' >> "$BG_FILE"
+            echo '}' >> "$BG_FILE"
           fi
 
       - name: Get dependencies
         run: flutter pub get
-
-      # - name: Analyze
-      #   run: flutter analyze 
 
       - name: Build release APK
         run: flutter build apk --release
