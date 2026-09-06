@@ -1,0 +1,67 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # flutter create can regenerate the Android platform, but it may also
+      # replace lib/main.dart and pubspec.yaml. We back up the app source first.
+      - name: Prepare Android platform without losing app source
+        shell: bash
+        run: |
+          set -e
+
+          if [ ! -f android/gradlew ]; then
+            mkdir -p /tmp/overtime_backup
+            cp -a lib /tmp/overtime_backup/lib
+            cp pubspec.yaml /tmp/overtime_backup/pubspec.yaml
+            if [ -f analysis_options.yaml ]; then
+              cp analysis_options.yaml /tmp/overtime_backup/analysis_options.yaml
+            fi
+
+            rm -rf android
+            flutter create . --platforms=android --project-name overtime_yer
+
+            rm -rf lib
+            cp -a /tmp/overtime_backup/lib lib
+            cp /tmp/overtime_backup/pubspec.yaml pubspec.yaml
+            if [ -f /tmp/overtime_backup/analysis_options.yaml ]; then
+              cp /tmp/overtime_backup/analysis_options.yaml analysis_options.yaml
+            fi
+          fi
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: overtime-yer-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
