@@ -30,10 +30,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Re-create Android platform shell
-        run: |
-          flutter create . --platforms=android --project-name overtime_yer
-
       - name: Get dependencies
         run: flutter pub get
 
