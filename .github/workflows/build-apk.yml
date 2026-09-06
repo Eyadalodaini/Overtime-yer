@@ -50,11 +50,17 @@ jobs:
             fi
           fi
 
+          # إضافة إعدادات Desugaring تلقائياً إلى build.gradle
+          if ! grep -q "coreLibraryDesugaringEnabled" android/app/build.gradle; then
+            sed -i '/compileOptions {/a \        coreLibraryDesugaringEnabled true' android/app/build.gradle
+            echo -e "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'\n}" >> android/app/build.gradle
+          fi
+
       - name: Get dependencies
         run: flutter pub get
 
- #     - name: Analyze
-     #   run: flutter analyze 
+      # - name: Analyze
+      #   run: flutter analyze 
 
       - name: Build release APK
         run: flutter build apk --release
