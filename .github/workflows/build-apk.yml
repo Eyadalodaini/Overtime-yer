@@ -33,16 +33,29 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Create missing default icon & build
+      - name: Create missing default icon
         run: |
           rm -f android/gradlew
           mkdir -p android/app/src/main/res/mipmap-hdpi
           if [ ! -f android/app/src/main/res/mipmap-hdpi/ic_launcher.png ]; then
             curl -o android/app/src/main/res/mipmap-hdpi/ic_launcher.png https://raw.githubusercontent.com/flutter/flutter/master/dev/integration_tests/flutter_gallery/android/app/src/main/res/mipmap-hdpi/ic_launcher.png
           fi
-          flutter build apk --release --android-skip-build-dependency-validation
 
-      - name: Upload APK
+      - name: Build release APK
+        run: flutter build apk --release --android-skip-build-dependency-validation
+
+      - name: Sign APK
+        uses: rinstaller/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: build/app/outputs/flutter-apk
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        ignore: true
+
+      - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
           name: overtime-yer-release
