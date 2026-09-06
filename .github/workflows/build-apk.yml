@@ -33,8 +33,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Fix gradlew line endings and permissions
+      - name: Ensure gradlew exists and fix permissions
         run: |
+          if [ ! -f android/gradlew ]; then
+            cd android && gradle wrapper
+            cd ..
+          fi
           sed -i 's/\r$//' android/gradlew
           chmod +x android/gradlew
 
