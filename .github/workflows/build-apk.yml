@@ -33,9 +33,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Clean bad gradlew and build
+      - name: Create missing default icon & build
         run: |
           rm -f android/gradlew
+          mkdir -p android/app/src/main/res/mipmap-hdpi
+          if [ ! -f android/app/src/main/res/mipmap-hdpi/ic_launcher.png ]; then
+            curl -o android/app/src/main/res/mipmap-hdpi/ic_launcher.png https://raw.githubusercontent.com/flutter/flutter/master/dev/integration_tests/flutter_gallery/android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          fi
           flutter build apk --release --android-skip-build-dependency-validation
 
       - name: Upload APK
