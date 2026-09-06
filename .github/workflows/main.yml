@@ -1,10 +1,12 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -18,11 +20,13 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Create Android project
+      - name: Prepare Flutter Android project
+        shell: bash
         run: |
+          set -e
           if [ ! -f android/gradlew ]; then
-            rm -rf android
             flutter create . --platforms=android --project-name overtime_yer
           fi
 
@@ -32,11 +36,12 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Build APK
+      - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: overtime-yer-release
+          name: overtime-yER-release
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
