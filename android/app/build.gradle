@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.overtime_yer"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.overtime_yer"
         minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
     }
