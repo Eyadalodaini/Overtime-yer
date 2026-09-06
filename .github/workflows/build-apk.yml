@@ -18,60 +18,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      - name: Prepare Android platform without losing app source
-        shell: bash
+      - name: Re-create Android platform shell
         run: |
-          set -e
-
-          if [ ! -f android/gradlew ]; then
-            mkdir -p /tmp/overtime_backup
-            cp -a lib /tmp/overtime_backup/lib
-            cp pubspec.yaml /tmp/overtime_backup/pubspec.yaml
-            if [ -f analysis_options.yaml ]; then
-              cp analysis_options.yaml /tmp/overtime_backup/analysis_options.yaml
-            fi
-
-            rm -rf android
-            flutter create . --platforms=android --project-name overtime_yer
-
-            rm -rf lib
-            cp -a /tmp/overtime_backup/lib lib
-            cp /tmp/overtime_backup/pubspec.yaml pubspec.yaml
-            if [ -f /tmp/overtime_backup/analysis_options.yaml ]; then
-              cp /tmp/overtime_backup/analysis_options.yaml analysis_options.yaml
-            fi
-          fi
-
-          # تحديث compileSdk إلى 36 لتوافق المكتبات الحديثة
-          if [ -f "android/app/build.gradle.kts" ]; then
-            sed -i 's/compileSdk = .*/compileSdk = 36/' android/app/build.gradle.kts
-          elif [ -f "android/app/build.gradle" ]; then
-            sed -i 's/compileSdkVersion .*/compileSdkVersion 36/' android/app/build.gradle
-          fi
-
-          # إضافة إعدادات Desugaring
-          BG_FILE="android/app/build.gradle.kts"
-          if [ ! -f "$BG_FILE" ]; then
-            BG_FILE="android/app/build.gradle"
-          fi
-
-          if ! grep -q "coreLibraryDesugaring" "$BG_FILE"; then
-            echo '' >> "$BG_FILE"
-            echo 'android {' >> "$BG_FILE"
-            echo '    compileOptions {' >> "$BG_FILE"
-            echo '        isCoreLibraryDesugaringEnabled = true' >> "$BG_FILE"
-            echo '    }' >> "$BG_FILE"
-            echo '}' >> "$BG_FILE"
-            echo 'dependencies {' >> "$BG_FILE"
-            echo '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")' >> "$BG_FILE"
-            echo '}' >> "$BG_FILE"
-          fi
+          flutter create . --platforms=android --project-name overtime_yer
 
       - name: Get dependencies
         run: flutter pub get
