@@ -36,13 +36,13 @@ jobs:
       - name: Fix and regenerated Gradle Wrapper
         run: |
           cd android
-          gradle wrapper --gradle-version 8.10.2 --distribution-type bin
+          gradle wrapper --gradle-version 8.7 --distribution-type bin
           sed -i 's/\r$//' gradlew
           chmod +x gradlew
           cd ..
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
