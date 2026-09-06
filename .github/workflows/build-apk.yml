@@ -33,14 +33,13 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Ensure gradlew exists and fix permissions
+      - name: Fix and regenerated Gradle Wrapper
         run: |
-          if [ ! -f android/gradlew ]; then
-            cd android && gradle wrapper
-            cd ..
-          fi
-          sed -i 's/\r$//' android/gradlew
-          chmod +x android/gradlew
+          cd android
+          gradle wrapper --gradle-version 8.10.2 --distribution-type bin
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          cd ..
 
       - name: Build release APK
         run: flutter build apk --release
